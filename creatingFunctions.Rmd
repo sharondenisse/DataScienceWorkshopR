@@ -1,0 +1,143 @@
+---
+title: "AirTemps"
+author: "Sharon D. Kenny"
+date: "October 10, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+airtemps_F <- c(212, 30.3, 75, 32)
+
+airtemps_C <- (airtemps_F[1] - 32)*5 / 9
+
+airtemps_C
+```
+
+
+```{r}
+celsius <- (airtemps_F - 32) * 5 / 9
+celsius
+```
+
+
+
+Instead, let's create a function F to convert temp to C  
+
+
+```{r}
+farenheit_to_celsius <- function (degree_F)  {
+  
+  celsius <- (degree_F - 32) * 5 / 9
+  return (celsius)
+  
+}
+```
+
+
+Let's check it...  
+
+
+```{r}
+
+farenheit_to_celsius(212)
+
+```
+
+
+Also, you can do the whole vector
+
+```{r}
+farenheit_to_celsius(airtemps_F)
+```
+
+
+You can also say...
+
+stopifnot(!is.numeric(farh))
+
+
+```{r}
+farenheit_to_celsius2 <- function (degree_F)  {
+  celsius <- (degree_F - 32) * 5 / 9
+  
+  stopifnot(is.numeric(degree_F))
+  return (celsius)
+  
+}
+```
+
+
+```{r}
+farenheit_to_celsius2(212)
+```
+
+
+Now, let's document the function...  
+
+
+```{r}
+library(roxygen2)
+```
+
+
+
+
+
+```{r}
+farenheit_to_celsius2 <- function (degree_F)  {
+  
+    #' Convert temperature data from Fahrenheit to Celsius
+    #'
+    #' @param fahr Temperature data in degrees Fahrenheit to be converted
+    #' @return temperature value in degrees Celsius
+    #'
+  celsius <- (degree_F - 32) * 5 / 9
+  
+  stopifnot(is.numeric(degree_F))
+  
+  return (celsius)
+  
+}
+
+
+farenheit_to_celsius2(212)
+```
+
+
+
+```{r}
+c_to_f <- function (ccc)  {
+  
+    #' Convert temperature data from Celsius to Farentheit
+    #'
+    #' @param fahr Temperature data in degrees Celsius to be converted
+    #' @return temperature value in degrees Farenheit
+    #'
+  
+  fff = (ccc * 9 / 5 ) + 32
+  
+  
+  return (fff)
+  
+}
+
+```
+
+
+
+```{r}
+c_to_f(100)
+```
+
+
+
+
+```{r}
+source("c_to_f.R")
+```
+
+

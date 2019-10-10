@@ -1,0 +1,101 @@
+---
+title: "R Intro: DataScience @ SantaBarbara"
+author: "Sharon D. Kenny"
+date: "October 8, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### R Markdown Tutorial
+
+1. Details on using R Markdown see <http://rmarkdown.rstudio.com>.
+      a. When you click the **Knit** button
+      b. Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.  
+
+
+###### First chunk below  
+
+  
+
+```{r firstChunk}
+(x = "Hello world")
+
+# Inside the chunk, the hash is a comment
+
+```
+
+
+
+
+#### Python! Hurray! :)
+
+```{r}
+library(reticulate)
+```
+
+
+```{python, eval = TRUE}
+x = '3'
+y = x*3
+print('This is y:' y)
+
+# It works!!!
+```
+
+
+Plain text with two spaces at the end...  
+... to start a new paragraph
+
+```{r}
+xx <- 2.222222222
+```
+
+The result is `r xx`
+
+
+> This is a block quote.  :)
+
+```{r, warning = FALSE}
+t <- c('1', '2', 'gggg')
+t <- as.numeric(t)
+t
+```
+
+Inline equations with single dollar sign
+$$ \sum(x^n) $$
+
+
+x = "create this as a quote by selecting all and typing a quote"
+
+
+
+# Read a file / dataframe
+Read in a file downloaded from the [Arctic Data Center](https://doi.org/10.18739/A25T3FZ8X).
+
+```{r}
+bgCHEM <- read.csv('BGchem2008data.csv', stringsAsFactors = FALSE)
+# head(bgCHEM)
+```
+
+Let's select some columns with `$`, which is a list selector 
+
+```{r}
+meanTemp <- mean(bgCHEM$CTD_Temperature)
+# meanTemp
+```
+
+
+
+```{r setup2, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Let's use the base-R plot 
+
+```{r}
+plot(bgCHEM$CTD_Depth,bgCHEM$CTD_Temperature)
+```
+

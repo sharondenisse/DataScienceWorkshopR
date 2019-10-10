@@ -1,0 +1,260 @@
+---
+title: "TidyTutorial"
+author: "Sharon D. Kenny"
+date: "October 9, 2019"
+output: html_document
+r_version: xxxx
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load the packages I need:
+```{r loadLibraries, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(stringr)
+```
+
+Some functions override others, so to access `filter` from the `stats` package, using this:
+`stats::filter()`
+
+
+## Downloading Dataset
+
+Dataset is here: https://knb.ecoinformatics.org/#view/df35b.304.2  
+
+
+#### Reading the data
+
+```{r}
+catch_original <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"), stringsAsFactors = FALSE)
+head(catch_original)
+```
+
+
+## Selecting our Data
+
+####The pipe operator (%>%)
+This operator combines operations, and it is used as a "then"
+Keyboard shortcut:  CTRL + SHIFT + m
+
+
+Step 1.  Remove the "All" column by selecting the columns you want with `select()`.  You can list the columns you would like to have in your new database or... 
+
+```{r}
+catch_data <- catch_original %>%  
+              select(-All, - notesRegCode)
+head(catch_data)
+```
+
+Step 2.  Check if the data is right
+
+```{r}
+summary(catch_data)
+```
+
+Step 3. Chinook is suposed to be a numeric, so let's change the values from character using `mutate()`
+
+```{r}
+catch_clean <- catch_data %>% 
+                  mutate(Chinook = as.numeric(Chinook))
+head(catch_clean)
+```
+
+Step 4. Investigate this NAs by using `which()` and `is.na()`
+
+
+```{r}
+
+i <- which(is.na(catch_clean$Chinook))
+i
+# This is the index of the row that has the NA
+```
+
+We should look into the original copy to vieww that 401th row
+
+```{r}
+catch_original[i,]
+
+```
+
+Cool... it is an uppercase i.  This should be a one! Cause: OCR with PDF 
+
+Step 5. Mutate the I into 1
+
+```{r}
+catch_clean <- catch_data %>% 
+                  mutate(Chinook = ifelse((Chinook == "I"), 1, Chinook)) %>% 
+                  mutate(Chinook = as.numeric(Chinook))
+
+head(catch_clean)
+```
+
+
+You can also write `ifelse (Chinook %in%  c("I" , 'l'), 1, Chinook)`
+
+
+## Tidy data
+
+#### Pivot your data.  Move from the wide format to tall format using `pivot_longer`.  It is similar to `gather`, which is deprecated.
+
+```{r}
+catch_long <- catch_clean %>%
+                pivot_longer(cols = -c(Region, Year), 
+                             names_to = 'species',
+                             values_to = 'catch')
+head(catch_long)
+  
+```
+
+
+But the wide format is better for printing...
+
+```{r}
+catch_wide <- catch_long %>% 
+                pivot_wider(names_from = species,
+                            values_from = catch)
+
+head(catch_wide)
+```
+
+### The way done at the class  
+Let's rename our column catch to `catch_thousands` and use `mutate()` 
+Well.. not rename it because `catch` is already in thousands.
+
+```{r}
+# catch_long <- catch_long %>%  
+#                 rename(catch_thousands = catch) %>% 
+#                 mutate(catch_thousands = catch_thousands *1000)
+
+catch_long <- catch_long %>%  
+                mutate(catch = catch *1000)
+
+head(catch_long)
+```
+
+
+### The way I would like to do it instead:
+
+```{r}
+catch_long2 <- catch_long %>%  
+                mutate(catch_thousands = catch *1000)
+
+head(catch_long2)
+```
+
+
+
+## Analyzing Data = Summarize
+
+
+Mean catch by region
+
+
+```{r}
+mean_region <- catch_long %>% 
+                  group_by(Region) %>% 
+                  summarise(mean_catch = mean(catch))
+
+mean_region
+```
+
+
+
+Let's filter by Region & species first if we want to look only at Sockeye
+
+```{r}
+mean_region <- catch_long %>% 
+                  group_by(Region, species) %>% 
+                  summarise(mean_catch = mean(catch),
+                            n_obs = n())
+
+mean_region
+```
+
+Mean sockeye by region... let's filter first
+
+```{r}
+mean_Sockeye_region <- catch_long %>% 
+                  filter (species == 'Sockeye') %>% 
+                  group_by(Region ) %>% 
+                  summarise(mean_catch = mean(catch))
+
+mean_Sockeye_region
+```
+
+Now by year
+
+
+
+
+
+```{r}
+annual_catch <- catch_long %>% 
+                  group_by(Year) %>% 
+                  summarise(total_catch = sum(catch)) %>% 
+                  arrange(desc(total_catch))
+
+annual_catch
+```
+
+## Joins in DPLYR
+#### Joining by region column
+
+
+```{r}
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1",
+                            method = "libcurl"),
+                            stringsAsFactors = FALSE) %>% 
+                            select(code, mgmtArea)
+
+head(region_defs)
+```
+
+Important: Create a new table when joining instead of overwriting a dataframe with the joined rows
+
+Below we will be able to "see" the left table and the right table
+
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by = c("Region" = "code"))
+
+head(catch_joined)
+```
+
+or
+
+```{r}
+region_defs2 <- region_defs %>% 
+                    rename(Region = code)
+
+catch_joined <- left_join(catch_long, region_defs2, by = "Region")
+# This is another way, with an inner join, but it will be different
+# catched_joined <- left_join(catch_long, region_defs)
+
+region_defs2
+```
+
+
+#### Separate and Unite sample
+
+```{r}
+dates_df <- data.frame(date = c("5/24/1930",
+                                "5/25/1930",
+                                "5/26/1930",
+                                "5/27/1930",
+                                "5/28/1930"),
+                       stringsAsFactors = FALSE)
+
+dates_df 
+
+
+dates_df %>% 
+  separate(date, into = c("month", "day", "year"), sep = "/", remove = FALSE) %>% 
+  unite(date_2, year, month, day, sep = "-")
+```
+
+
+Lubridate is a great way to work with dates!
