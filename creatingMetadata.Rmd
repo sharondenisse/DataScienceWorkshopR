@@ -1,0 +1,55 @@
+---
+title: "WritingEMLs"
+author: "Sharon D. Kenny"
+date: "October 11, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(EML)
+```
+
+
+
+```{r}
+me2 <- list(givenName = "Sharon D.", 
+          surName = "Kenny")
+
+me2
+```
+
+helper functions syntax: `elm$elementName()`
+
+```{r}
+me <- eml$individualName(givenName = "Sharon D.",
+                         surName = "Kenny")
+```
+
+
+Minimal Valid EML:
+* package id
+* system
+* title
+* creator
+* contact
+
+
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
